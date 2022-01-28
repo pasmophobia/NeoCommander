@@ -58,9 +58,9 @@ jobs:
     needs: [build]
     steps:
       - name: Download artifact
-       uses: actions/download-artifact@v2
-       with:
-       name: jar
+        uses: actions/download-artifact@v2
+        with:
+          name: jar
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
