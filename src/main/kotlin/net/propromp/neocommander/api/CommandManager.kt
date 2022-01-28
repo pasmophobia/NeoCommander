@@ -64,7 +64,7 @@ class CommandManager(val plugin: Plugin) {
         commands.remove(neoCommand.name)
 
         // unregister from bukkit
-        val commandMap = Bukkit.getCommandMap()
+        val commandMap = NMSUtil.simpleCommandMap().instance as CommandMap
         val knownCommands = NMSUtil.simpleCommandMap().getField("knownCommands") as MutableMap<String,Command>
         knownCommands.remove("${plugin.name}:${neoCommand.name}")?.unregister(commandMap)
         knownCommands.remove(neoCommand.name)?.unregister(commandMap)
@@ -85,7 +85,7 @@ class CommandManager(val plugin: Plugin) {
      * clear commands registered by this command manager
      */
     fun clearCommands() {
-        commands.values.forEach { unregister(it) }
+        HashMap(commands).values.forEach { unregister(it) }
         sendCommandUpdate()
     }
 
