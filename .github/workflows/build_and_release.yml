@@ -1,11 +1,9 @@
 name: Build and release
 
 on:
-  workflow_call:
-    inputs:
-      java-version:
-        required: true
-        type: string
+  push:
+    branches:
+      - main
 
 
 jobs:
