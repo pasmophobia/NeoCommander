@@ -14,11 +14,8 @@ class LocationArgument(name: String, val type: LocationType = LocationType.ENTIT
     }
 
     override fun asBrigadier() = when (type) {
-        LocationType.BLOCK -> NMSUtil.argumentPosition().construct()
-        LocationType.ENTITY -> NMSUtil.argumentVec3().constructBySelectingTypes(
-            arrayOf(Boolean::class.javaPrimitiveType!!),
-            arrayOf(true)
-        )
+        LocationType.BLOCK -> NMSUtil.argumentPosition().invokeStaticMethod("a")
+        LocationType.ENTITY -> NMSUtil.argumentVec3().invokeStaticMethod("a")
     } as ArgumentType<out Any>
 
     override fun parse(context: NeoCommandContext, t: Any): Location {
