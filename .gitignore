@@ -1,0 +1,9 @@
+/src/main/kotlin/CommandTest.kt
+/src/main/kotlin/Food.kt
+/src/main/kotlin/FoodArgument.kt
+/src/main/kotlin/TestPlugin.kt
+/src/main/resources/plugin.yml
+/server/
+/build/
+/.gradle/
+/.idea/
