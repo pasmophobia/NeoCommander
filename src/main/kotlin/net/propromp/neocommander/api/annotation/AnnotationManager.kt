@@ -1,8 +1,6 @@
 package net.propromp.neocommander.api.annotation
 
 import com.mojang.brigadier.Message
-import com.mojang.brigadier.StringReader
-import com.mojang.brigadier.exceptions.CommandExceptionType
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.propromp.neocommander.api.CommandManager
@@ -11,7 +9,6 @@ import net.propromp.neocommander.api.NeoCommandContext
 import net.propromp.neocommander.api.argument.NeoArgument
 import net.propromp.neocommander.api.builder.CommandBuilder
 import net.propromp.neocommander.api.exception.ArgumentParseException
-import net.propromp.neocommander.api.nms.NMSUtil
 import net.propromp.neocommander.api.nms.NMSUtil.toIChatBaseComponent
 import java.lang.reflect.Method
 
@@ -36,23 +33,23 @@ class AnnotationManager(val commandManager: CommandManager) {
      */
     fun parse(instance: Any): NeoCommand {
         val clazz = instance.javaClass
-        val rootAnnotation = clazz.getAnnotation(Command::class.java) ?: throw IllegalArgumentException()
+        val rootCommandAnnotation = clazz.getAnnotation(Command::class.java) ?: throw IllegalArgumentException()
 
-        var rootBuilder = CommandBuilder(rootAnnotation.name)
-            .aliases(*rootAnnotation.aliases)
-            .description(rootAnnotation.description)
-            .requiresSender(rootAnnotation.senderType.java)
-        if (rootAnnotation.permission != "") {
-            rootBuilder = rootBuilder.requiresPermission(rootAnnotation.permission)
+        var rootBuilder = CommandBuilder(rootCommandAnnotation.name)
+            .aliases(*rootCommandAnnotation.aliases)
+            .description(rootCommandAnnotation.description)
+            .requiresSender(rootCommandAnnotation.senderType.java)
+        if (rootCommandAnnotation.permission != "") {
+            rootBuilder = rootBuilder.requiresPermission(rootCommandAnnotation.permission)
         }
 
         clazz.methods.forEach { method ->
             method.getAnnotation(Command::class.java)?.let { commandAnnotation ->
-                rootBuilder = rootBuilder.appendChildren(parseMethod(instance, method))
+                rootBuilder = rootBuilder.appendChildren(parseMethod(commandAnnotation, instance, method))
             }
 
-            method.getAnnotation(Root::class.java)?.let { rootAnnotation ->
-                rootBuilder = rootBuilder.executes(getFunction(instance, method, getParameters(method)))
+            method.getAnnotation(Root::class.java)?.let { _ ->
+                rootBuilder = rootBuilder.appendParallelCommands(parseMethod(rootCommandAnnotation, instance, method))
             }
         }
 
@@ -71,9 +68,7 @@ class AnnotationManager(val commandManager: CommandManager) {
      * @param method method
      * @return neo command
      */
-    fun parseMethod(instance: Any, method: Method): NeoCommand {
-        val annotation = method.getAnnotation(Command::class.java) ?: throw IllegalArgumentException()
-
+    fun parseMethod(annotation: Command, instance: Any, method: Method): NeoCommand {
         var builder = CommandBuilder(annotation.name)
             .aliases(*annotation.aliases)
             .description(annotation.description)
@@ -109,12 +104,17 @@ class AnnotationManager(val commandManager: CommandManager) {
             parameters.forEach {
                 arguments.add(
                     when (it.type) {
-                        ParameterType.ARGUMENT ->  {
+                        ParameterType.ARGUMENT -> {
                             try {
-                                it.argument!!.parse(context,context.getArgument(it.name, Any::class.java))
-                            } catch(e:ArgumentParseException) {
+                                it.argument!!.parse(context, context.getArgument(it.name, Any::class.java))
+                            } catch (e: ArgumentParseException) {
                                 val message = e.textComponent.toIChatBaseComponent().instance as Message
-                                throw CommandSyntaxException(SimpleCommandExceptionType(message),message,context.input,context.context.nodes.last().range.start)
+                                throw CommandSyntaxException(
+                                    SimpleCommandExceptionType(message),
+                                    message,
+                                    context.input,
+                                    context.context.nodes.last().range.start
+                                )
                             }
                         }
                         ParameterType.SENDER -> context.source.sender
@@ -150,7 +150,10 @@ class AnnotationManager(val commandManager: CommandManager) {
                                 if (it.parameterCount == 1 && it.parameters[0].type == String::class.java) {
                                     argument = it.newInstance(parameter.name) as NeoArgument<in Any, in Any>
                                 } else if (it.parameterCount == 2 && it.parameters[0].type == String::class.java && it.parameters[1].type == annotation.annotationClass.java) {
-                                    argument = it.newInstance(parameter.name, annotation) as NeoArgument<in Any, in Any>
+                                    argument = it.newInstance(
+                                        parameter.name,
+                                        annotation
+                                    ) as NeoArgument<in Any, in Any>
                                 }
                             }
                             if (argument != null) {

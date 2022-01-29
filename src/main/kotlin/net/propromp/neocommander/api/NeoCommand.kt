@@ -24,8 +24,9 @@ class NeoCommand(
     val description: String,
     val function: (NeoCommandContext) -> Int,
     val requires: (NeoCommandSource) -> Boolean,
-    val arguments: List<NeoArgument<out Any,out Any>>,
-    val children: List<NeoCommand>
+    val arguments: List<NeoArgument<out Any, out Any>>,
+    val children: List<NeoCommand>,
+    val parallelCommands: List<NeoCommand>
 ) {
 
     /**
@@ -37,10 +38,19 @@ class NeoCommand(
         val literal = LiteralArgumentBuilder.literal<Any>(name)
 
         //arguments
-        getRequiredArgumentBuilder()?.let { argumentBuilder ->
-            literal.then(argumentBuilder)
+        getRequiredArgumentBuilder()?.let {
+            literal.then(it)
         } ?: run {
             literal.executes(getBrigadierCommand())
+        }
+
+        //parallel commands
+        parallelCommands.forEach { parallelCommand ->
+            parallelCommand.getRequiredArgumentBuilder()?.let {
+                literal.then(it)
+            } ?: run {
+                literal.executes(parallelCommand.getBrigadierCommand())
+            }
         }
 
         //requires
@@ -73,6 +83,7 @@ class NeoCommand(
                 shallowerArgumentBuilder.executes(getBrigadierCommand())
             }
         }
+
         return argumentBuilder
     }
 
@@ -80,7 +91,7 @@ class NeoCommand(
         return com.mojang.brigadier.Command {
             try {
                 function.invoke(NeoCommandContext(this, it))
-            } catch(e:Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 throw e
             }
