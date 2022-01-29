@@ -19,7 +19,7 @@ class LocationArgument(name: String, val type: LocationType = LocationType.ENTIT
     } as ArgumentType<out Any>
 
     override fun parse(context: NeoCommandContext, t: Any): Location {
-        val vec3D = NMSUtil.vec3d(NMSUtil.iVectorPosition(t).invokeMethod("a",context.context.source)!!)
+        val vec3D = NMSUtil.vec3d(NMSUtil.iVectorPosition(t).invokeMethod("a", context.context.source)!!)
         val x = vec3D.invokeMethod("getX") as Double
         val y = vec3D.invokeMethod("getY") as Double
         val z = vec3D.invokeMethod("getZ") as Double

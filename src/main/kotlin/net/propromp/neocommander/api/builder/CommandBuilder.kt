@@ -13,7 +13,8 @@ data class CommandBuilder(
     private val function: (NeoCommandContext) -> Int = { 0 },
     private val requirements: List<(NeoCommandSource) -> Boolean> = listOf(),
     private val arguments: List<NeoArgument<out Any,out Any>> = listOf(),
-    private val children: List<NeoCommand> = listOf()
+    private val children: List<NeoCommand> = listOf(),
+    private val parallelCommands: List<NeoCommand> = listOf()
 ) {
     fun build() = NeoCommand(
         name,
@@ -24,7 +25,8 @@ data class CommandBuilder(
             it.invoke(source)
         }.isEmpty() },
         arguments,
-        children
+        children,
+        parallelCommands
     )
 
     fun aliases(vararg aliases: String) = copy(aliases = aliases.toList())
@@ -55,4 +57,8 @@ data class CommandBuilder(
     fun appendChildren(vararg children: NeoCommand) =
         copy(children = this.children.toMutableList().apply { addAll(children) })
 
+
+    fun parallelCommands(vararg parallelCommand: NeoCommand) = copy(parallelCommands = parallelCommand.toList())
+    fun appendParallelCommands(vararg parallelCommand: NeoCommand) =
+        copy(parallelCommands = this.parallelCommands.toMutableList().apply { addAll(parallelCommand) })
 }

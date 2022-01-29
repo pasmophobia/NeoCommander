@@ -21,7 +21,7 @@ class CommandManager(val plugin: Plugin) {
     val annotationManager = AnnotationManager(this)
     private val minecraftDispatcher: NMS = NMSUtil.minecraftDispatcher()
     private val brigadierDispatcher: BrigadierDispatcher<in Any> = minecraftDispatcher.invokeMethod("a") as BrigadierDispatcher<in Any>
-    private val commands = mutableMapOf<String, NeoCommand>()
+    private val commands = mutableListOf<NeoCommand>()
 
     /**
      * register a command.
@@ -30,10 +30,6 @@ class CommandManager(val plugin: Plugin) {
      * @param neoCommand command
      */
     fun register(neoCommand: NeoCommand) {
-        if (commands.contains(neoCommand.name)) {
-            throw IllegalArgumentException("Command with the same name already exists!")
-        }
-
         // register into brigadier
         val literalArgumentBuilder = neoCommand.getLiteralArgumentBuilder()
         val commandNode = brigadierDispatcher.register(literalArgumentBuilder)
@@ -47,7 +43,7 @@ class CommandManager(val plugin: Plugin) {
         commandMap.register(plugin.name, neoCommand.getVanillaCommandWrapper(minecraftDispatcher.instance, commandNode))
 
         // put into map
-        commands[neoCommand.name] = neoCommand
+        commands += neoCommand
     }
 
     /**
@@ -56,12 +52,12 @@ class CommandManager(val plugin: Plugin) {
      * @param neoCommand command
      */
     fun unregister(neoCommand: NeoCommand) {
-        if (!commands.contains(neoCommand.name)) {
+        if (!commands.contains(neoCommand)) {
             throw IllegalArgumentException("The command is not registered!")
         }
 
         // remove from map
-        commands.remove(neoCommand.name)
+        commands.remove(neoCommand)
 
         // unregister from bukkit
         val commandMap = NMSUtil.simpleCommandMap().instance as CommandMap
@@ -85,7 +81,7 @@ class CommandManager(val plugin: Plugin) {
      * clear commands registered by this command manager
      */
     fun clearCommands() {
-        HashMap(commands).values.forEach { unregister(it) }
+        ArrayList(commands).forEach { unregister(it) }
         sendCommandUpdate()
     }
 
