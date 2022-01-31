@@ -27,24 +27,24 @@ jobs:
           restore-keys: |
             gradle-${{ hashFiles('build.gradle.kts') }}
             gradle-
-      - name: build
-        run: ./gradlew build
-      - name: get file name
-        id: get-filename
-        run: echo ::set-output name=filename::$(ls -1 ./build/libs/)
-      - name: get version
-        id: get-version
-        uses: christian-draeger/read-properties@1.0.1
-        with:
-          path: ./gradle.properties
-          property: VERSION_NAME
-      - name: Release
-        uses: Hs1r1us/Release-AIO@v1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get-version.outputs.value }}
-          asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
+#      - name: build
+#        run: ./gradlew build
+#      - name: get file name
+#        id: get-filename
+#        run: echo ::set-output name=filename::$(ls -1 ./build/libs/)
+#      - name: get version
+#        id: get-version
+#        uses: christian-draeger/read-properties@1.0.1
+#        with:
+#          path: ./gradle.properties
+#          property: VERSION_NAME
+#      - name: Release
+#        uses: Hs1r1us/Release-AIO@v1.0
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ steps.get-version.outputs.value }}
+#          asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
       - name: import gpg key
         run: |
           export GPG_TTY=$(tty)
