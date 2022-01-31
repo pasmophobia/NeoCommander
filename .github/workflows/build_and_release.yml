@@ -52,14 +52,12 @@ jobs:
           encodedString: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
       - name: configure publish
         uses: frdrwrt/write-to-file@v1.3
-        with:
-          filepath: ${{ github.workspace }}/.gradle/gradle.properties
-          content: |
-            signing.keyId=${{ secrets.NEXUS_KEY_ID }}
-            signing.password=${{ secrets.NEXUS_KEY_PASSWORD }}
-            signing.secretKeyRingFile=${{ github.workspace }}/key.gpg
-            mavenCentralUsername=${{ secrets.NEXUS_USERNAME }}
-            mavenCentralPassword=${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          echo signing.keyId=${{ secrets.NEXUS_KEY_ID }} >> gradle.properties
+          echo signing.password=${{ secrets.NEXUS_KEY_PASSWORD }} >> gradle.properties
+          echo signing.secretKeyRingFile=${{ github.workspace }}/key.gpg >>  gradle.properties
+          echo mavenCentralUsername=${{ secrets.NEXUS_USERNAME }} >> gradle.properties
+          echo mavenCentralPassword=${{ secrets.NEXUS_PASSWORD }} >> gradle.properties
       - name: Gradle publish
         run: ./gradlew publish
       - name: Nexus release
