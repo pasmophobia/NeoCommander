@@ -46,7 +46,10 @@ jobs:
           tag_name: ${{ steps.get-version.outputs.value }}
           asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
       - name: import gpg key
-        run: export GPG_TTY=$(tty) && echo -n "$BASE64" | base64 --decode | gpg --import
+        run: |
+        export GPG_TTY=$(tty)
+        echo -n "$BASE64" | base64 --decode > key
+        gpg --import key
         env:
           BASE64: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
       - name: configure publish
