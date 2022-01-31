@@ -41,7 +41,7 @@ jobs:
         with:
           file: ./build.gradle.kts
       - name: Release
-        uses: Hs1r1us/Release-AIO@v1
+        uses: Hs1r1us/Release-AIO@v1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
