@@ -53,7 +53,7 @@ jobs:
           filePath: ${{ github.workspace }}/key.gpg
           encodedString: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
       - name: configure publish
-        uses: christian-draeger/write-properties@1.0.2
+        uses: christian-draeger/write-properties@1.1.0
         with:
           path: "~/.gradle/gradle.properties"
           property: |
