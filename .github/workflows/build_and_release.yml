@@ -52,6 +52,8 @@ jobs:
         with:
           filePath: ${{ github.workspace }}/key.gpg
           encodedString: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
+      - name: make gradle.properties
+        run: echo '' > ~/.gradle/gradle.properties
       - name: configure publish
         uses: christian-draeger/write-properties@1.1.0
         with:
