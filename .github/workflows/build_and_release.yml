@@ -48,6 +48,7 @@ jobs:
       - name: configure publish
         run: |
           echo signingInMemoryKey=${{ secrets.GPG_KEY }} >> gradle.properties
+          echo signingInMemoryKeyPassword=${{ secrets.GPG_PASSWORD }} >> gradle.properties
           echo mavenCentralUsername=${{ secrets.NEXUS_USERNAME }} >> gradle.properties
           echo mavenCentralPassword=${{ secrets.NEXUS_PASSWORD }} >> gradle.properties
       - name: Gradle publish
