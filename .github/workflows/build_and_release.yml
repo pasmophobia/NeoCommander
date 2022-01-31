@@ -45,13 +45,11 @@ jobs:
 #        with:
 #          tag_name: ${{ steps.get-version.outputs.value }}
 #          asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
-      - name: import gpg key
-        run: |
-          export GPG_TTY=$(tty)
-          echo -n "$BASE64" | base64 --decode > ${{ github.workspace }}/key
-          gpg --import ${{ github.workspace }}/key
-        env:
-          BASE64: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.NEXUS_KEY_SECRET_BASE64 }}
+          passphrase: ${{ secrets.NEXUS_KEY_PASSWORD }}
       - name: configure publish
         run: |
           echo signing.keyId=${{ secrets.NEXUS_KEY_ID }} >> gradle.properties
