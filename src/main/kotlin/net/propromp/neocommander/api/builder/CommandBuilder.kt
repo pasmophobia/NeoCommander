@@ -12,7 +12,7 @@ data class CommandBuilder(
     private val description: String = "",
     private val function: (NeoCommandContext) -> Int = { 0 },
     private val requirements: List<(NeoCommandSource) -> Boolean> = listOf(),
-    private val arguments: List<NeoArgument<out Any,out Any>> = listOf(),
+    private val arguments: List<NeoArgument<Any,Any>> = listOf(),
     private val children: List<NeoCommand> = listOf(),
     private val parallelCommands: List<NeoCommand> = listOf()
 ) {
@@ -24,7 +24,7 @@ data class CommandBuilder(
         { source -> requirements.filterNot {
             it.invoke(source)
         }.isEmpty() },
-        arguments,
+        arguments.associateBy { it.name },
         children,
         parallelCommands
     )
@@ -49,8 +49,8 @@ data class CommandBuilder(
 
     fun requiresPermission(permission: String) = appendRequirement { it.sender.hasPermission(permission) }
     fun requiresSender(clazz: Class<out CommandSender>) = appendRequirement { clazz.isInstance(it.sender) }
-    fun arguments(vararg arguments: NeoArgument<out Any,out Any>) = copy(arguments = arguments.toList())
-    fun appendArguments(vararg arguments: NeoArgument<out Any,out Any>) =
+    fun arguments(vararg arguments: NeoArgument<Any,Any>) = copy(arguments = arguments.toList())
+    fun appendArguments(vararg arguments: NeoArgument<Any,Any>) =
         copy(arguments = this.arguments.toMutableList().apply { addAll(arguments) })
 
     fun children(vararg children: NeoCommand) = copy(children = children.toList())

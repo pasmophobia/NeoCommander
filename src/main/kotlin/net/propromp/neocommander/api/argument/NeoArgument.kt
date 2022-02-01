@@ -12,7 +12,7 @@ import net.propromp.neocommander.api.NeoSuggestionProvider
  * @property name name of this argument
  * @property suggestionProvider suggestion provider
  */
-abstract class NeoArgument<T, B>(
+abstract class NeoArgument<out T, out B>(
     val name: String,
     open val suggestionProvider: NeoSuggestionProvider? = null
 ) {
@@ -22,5 +22,5 @@ abstract class NeoArgument<T, B>(
      * @return
      */
     abstract fun asBrigadier(): ArgumentType<out Any>
-    abstract fun parse(context: NeoCommandContext, t: T): B
+    abstract fun parse(context: NeoCommandContext, t: @UnsafeVariance T): B
 }
