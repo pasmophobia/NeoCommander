@@ -27,8 +27,8 @@ jobs:
           restore-keys: |
             gradle-${{ hashFiles('build.gradle.kts') }}
             gradle-
-      - name: build
-        run: ./gradlew build
+      - name: shadowJar
+        run: ./gradlew shadowJar
       - name: get file name
         id: get-filename
         run: echo ::set-output name=filename::$(ls -1 ./build/libs/)
@@ -38,11 +38,18 @@ jobs:
         with:
           path: ./gradle.properties
           property: VERSION_NAME
+      - name: changelog
+        id: changelog
+        run: |
+          cat README.md >> changelog/${{ steps.get-version.outputs.value }}.md
+          sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog/${{ steps.get-version.outputs.value }}.md > changelog/${{ steps.get-version.outputs.value }}.md
+          echo ::set-output name=changelog::$(cat changelog/${{ steps.get-version.outputs.value }}.md)
       - name: Release
         uses: Hs1r1us/Release-AIO@v1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          body: ${{ steps.changelog.outputs.changelog }}
           tag_name: ${{ steps.get-version.outputs.value }}
           asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
   publish:

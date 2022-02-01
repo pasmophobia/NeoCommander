@@ -1,15 +1,10 @@
 package net.propromp.neocommander.api.annotation
 
-import com.mojang.brigadier.Message
-import com.mojang.brigadier.exceptions.CommandSyntaxException
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.propromp.neocommander.api.CommandManager
 import net.propromp.neocommander.api.NeoCommand
 import net.propromp.neocommander.api.NeoCommandContext
 import net.propromp.neocommander.api.argument.NeoArgument
 import net.propromp.neocommander.api.builder.CommandBuilder
-import net.propromp.neocommander.api.exception.ArgumentParseException
-import net.propromp.neocommander.api.nms.NMSUtil.toIChatBaseComponent
 import java.lang.reflect.Method
 
 /**
@@ -82,7 +77,7 @@ class AnnotationManager(val commandManager: CommandManager) {
 
         // arguments
         builder = builder.arguments(*parameters.filter { it.type == ParameterType.ARGUMENT }
-            .map { it.argument!! as NeoArgument<out Any, out Any> }.toTypedArray())
+            .map { it.argument!! as NeoArgument<Any, Any> }.toTypedArray())
 
         // executes
         builder = builder.executes(getFunction(instance, method, parameters))
@@ -104,19 +99,7 @@ class AnnotationManager(val commandManager: CommandManager) {
             parameters.forEach {
                 arguments.add(
                     when (it.type) {
-                        ParameterType.ARGUMENT -> {
-                            try {
-                                it.argument!!.parse(context, context.getArgument(it.name, Any::class.java))
-                            } catch (e: ArgumentParseException) {
-                                val message = e.textComponent.toIChatBaseComponent().instance as Message
-                                throw CommandSyntaxException(
-                                    SimpleCommandExceptionType(message),
-                                    message,
-                                    context.input,
-                                    context.context.nodes.last().range.start
-                                )
-                            }
-                        }
+                        ParameterType.ARGUMENT -> context.getArgument(it.name, Any::class.java)
                         ParameterType.SENDER -> context.source.sender
                         ParameterType.CONTEXT -> context
                         ParameterType.SOURCE -> context.source
@@ -138,7 +121,7 @@ class AnnotationManager(val commandManager: CommandManager) {
         method.parameters.forEach { parameter ->
             val name = parameter.name
             var parameterType: ParameterType? = null
-            var argument: NeoArgument<in Any, in Any>? = null
+            var argument: NeoArgument<Any, Any>? = null
             parameter.annotations.forEach annotationLoop@{ annotation ->
                 parameterType = when (annotation) {
                     is Sender -> ParameterType.SENDER
@@ -148,12 +131,12 @@ class AnnotationManager(val commandManager: CommandManager) {
                         annotation.annotationClass.java.getAnnotation(Argument::class.java)?.let { argumentAnnotation ->
                             argumentAnnotation.argumentClass.java.constructors.forEach {
                                 if (it.parameterCount == 1 && it.parameters[0].type == String::class.java) {
-                                    argument = it.newInstance(parameter.name) as NeoArgument<in Any, in Any>
+                                    argument = it.newInstance(parameter.name) as NeoArgument<Any, Any>
                                 } else if (it.parameterCount == 2 && it.parameters[0].type == String::class.java && it.parameters[1].type == annotation.annotationClass.java) {
                                     argument = it.newInstance(
                                         parameter.name,
                                         annotation
-                                    ) as NeoArgument<in Any, in Any>
+                                    ) as NeoArgument<Any, Any>
                                 }
                             }
                             if (argument != null) {

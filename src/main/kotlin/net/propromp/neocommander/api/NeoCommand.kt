@@ -24,7 +24,7 @@ class NeoCommand(
     val description: String,
     val function: (NeoCommandContext) -> Int,
     val requires: (NeoCommandSource) -> Boolean,
-    val arguments: List<NeoArgument<out Any, out Any>>,
+    val arguments: Map<String,NeoArgument<Any, Any>>,
     val children: List<NeoCommand>,
     val parallelCommands: List<NeoCommand>
 ) {
@@ -71,7 +71,7 @@ class NeoCommand(
      */
     fun getRequiredArgumentBuilder(): RequiredArgumentBuilder<Any, out Any>? {
         var argumentBuilder: RequiredArgumentBuilder<Any, out Any>? = null
-        arguments.reversed().forEach { argument ->
+        arguments.values.reversed().forEach { argument ->
             val shallowerArgumentBuilder: RequiredArgumentBuilder<Any, out Any> =
                 RequiredArgumentBuilder.argument(argument.name, argument.asBrigadier())
             argument.suggestionProvider?.let {

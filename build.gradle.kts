@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.dokka") version "1.6.10"
     id("com.vanniktech.maven.publish") version "0.18.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 repositories {
@@ -23,7 +24,7 @@ tasks {
     }
 
     create<Copy>("buildPlugin") {
-        from(build)
+        from(shadowJar)
         into("server/plugins")
     }
 
