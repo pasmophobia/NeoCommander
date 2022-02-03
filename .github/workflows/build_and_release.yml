@@ -44,12 +44,12 @@ jobs:
       - name: Release note
         id: releasenote
         run: |
-          cat README.md >> releasenote.md
-          echo # 📑 Changelog >> releasenote.md
-          echo ${{ steps.releasenote.outputs.releaseNotes }} >> releasenote.md
-          sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog.txt > releasenote.md
-          cat releasenote.md
-          echo '::set-output name=releasenote::$(cat releasenote.md)'
+          cat README.md >> ./releasenote.md
+          echo # 📑 Changelog >> ./releasenote.md
+          echo ${{ steps.releasenote.outputs.releaseNotes }} >> ./releasenote.md
+          sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog.txt > ./releasenote.md
+          cat ./releasenote.md
+          echo '::set-output name=releasenote::$(cat ./releasenote.md)'
       - name: Release
         uses: Hs1r1us/Release-AIO@v1.0
         env:
