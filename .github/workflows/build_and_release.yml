@@ -27,8 +27,8 @@ jobs:
           restore-keys: |
             gradle-${{ hashFiles('build.gradle.kts') }}
             gradle-
-      - name: shadowJar
-        run: ./gradlew shadowJar
+      - name: jar
+        run: ./gradlew jar
       - name: get file name
         id: get-filename
         run: echo ::set-output name=filename::$(ls -1 ./build/libs/)
@@ -38,18 +38,36 @@ jobs:
         with:
           path: ./gradle.properties
           property: VERSION_NAME
-      - name: changelog
+      - name: Create tag
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ steps.get-version.outputs.value }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate full changelog
+        uses: paolorevillosa/release-change-logs@master
         id: changelog
+        with:
+          custom_tag: |
+            {
+              "[Add]": "## 🚀 Features",
+              "[Fix]": "## 🐛 Fixes",
+              "[Other]": "## 📁 Other changes"
+            }
+      - name: Release note
+        id: releasenote
         run: |
-          cat README.md >> changelog/${{ steps.get-version.outputs.value }}.md
-          sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog/${{ steps.get-version.outputs.value }}.md > changelog/${{ steps.get-version.outputs.value }}.md
-          echo ::set-output name=changelog::$(cat changelog/${{ steps.get-version.outputs.value }}.md)
+          cat README.md >> releasenote.md
+          echo # 📑 Changelog >> releasenote.md
+          echo ${{ steps.changelog.outputs.change-logs }} >> releasenote.md
+          sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog.txt > releasenote.md
+          cat releasenote.md
+          echo '::set-output name=releasenote::$(cat releasenote.md)'
       - name: Release
         uses: Hs1r1us/Release-AIO@v1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: ${{ steps.releasenote.outputs.releasenote }}
           tag_name: ${{ steps.get-version.outputs.value }}
           asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
   publish:

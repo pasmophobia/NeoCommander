@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.dokka") version "1.6.10"
     id("com.vanniktech.maven.publish") version "0.18.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 repositories {
@@ -20,11 +19,11 @@ dependencies {
 
 tasks {
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
 
     create<Copy>("buildPlugin") {
-        from(shadowJar)
+        from(jar)
         into("server/plugins")
     }
 
