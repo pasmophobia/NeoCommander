@@ -91,7 +91,7 @@ class CommandManager(val plugin: Plugin) {
      * @param player player
      */
     fun sendCommandUpdate(player: Player) {
-        minecraftDispatcher.invokeMethod("a",player.toEntityPlayer())
+        minecraftDispatcher.invokeMethod("a",player.toEntityPlayer().instance)
     }
 
     /**
