@@ -38,27 +38,15 @@ jobs:
         with:
           path: ./gradle.properties
           property: VERSION_NAME
-      - name: Create tag
-        uses: negz/create-tag@v1
-        with:
-          version: ${{ steps.get-version.outputs.value }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Generate full changelog
-        uses: paolorevillosa/release-change-logs@master
-        id: changelog
-        with:
-          custom_tag: |
-            {
-              "[Add]": "## 🚀 Features",
-              "[Fix]": "## 🐛 Fixes",
-              "[Other]": "## 📁 Other changes"
-            }
+      - name: Generate release notes
+        id: release-notes-preview
+        uses: guilhermetod/semantic-release-notes-preview@v1.0.0
       - name: Release note
         id: releasenote
         run: |
           cat README.md >> releasenote.md
           echo # 📑 Changelog >> releasenote.md
-          echo ${{ steps.changelog.outputs.change-logs }} >> releasenote.md
+          echo ${{ steps.releasenote.outputs.releaseNotes }} >> releasenote.md
           sed -e s/%version%/${{ steps.get-version.outputs.value }}/g changelog.txt > releasenote.md
           cat releasenote.md
           echo '::set-output name=releasenote::$(cat releasenote.md)'
