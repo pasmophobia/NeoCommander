@@ -49,7 +49,7 @@ jobs:
           echo ${{ steps.releasenote.outputs.releaseNotes }} >> ./releasenote.md
           sed -e s/%version%/${{ steps.get-version.outputs.value }}/g releasenote.md > ./releasenote.md
           cat ./releasenote.md
-          echo '::set-output name=releasenote::$(cat ./releasenote.md)'
+          echo ::set-output name=releasenote::$(cat ./releasenote.md)
       - name: Release
         uses: Hs1r1us/Release-AIO@v1.0
         env:
