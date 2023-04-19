@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender
 class NeoCommandSource(src: Any) {
     val source = NMSUtil.commandListenerWrapper().apply { instance = src }
     val sender = source.invokeMethod("getBukkitSender") as CommandSender
-    val world = NMSUtil.world(source.invokeMethod("getWorld")!!).invokeMethod("getWorld") as World
+    val world: World? = source.invokeMethod("getWorld")?.let {NMSUtil.world(it).invokeMethod("getWorld") as World? }
     fun sendMessage(message: TextComponent, logAdmin: Boolean = true) {
         source.invokeMethodBySelectingTypes(
             "sendMessage",
