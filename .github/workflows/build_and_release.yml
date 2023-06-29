@@ -14,10 +14,10 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v2
-      - name: Setup JDK 11
+      - name: Setup JDK 17
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
           java-package: jdk
       - name: cache gradle
         uses: actions/cache@v2
@@ -61,37 +61,3 @@ jobs:
           body: ${{ steps.releasenote.outputs.releasenote }}
           tag_name: ${{ steps.get-version.outputs.value }}
           asset_files: ./build/libs/${{ steps.get-filename.outputs.filename }}
-  publish:
-    name: Publish to maven central
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v2
-      - name: Setup JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-          java-package: jdk
-      - name: cache gradle
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('build.gradle.kts') }}
-          restore-keys: |
-            gradle-${{ hashFiles('build.gradle.kts') }}
-            gradle-
-      - name: Gradle publish
-        run: ./gradlew publish --stacktrace
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.NEXUS_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.NEXUS_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWORD }}
-      - name: Nexus release
-        uses: Propromp/nexus-release@1
-        with:
-          groupId: "net.propromp"
-          nexusUsername: ${{ secrets.NEXUS_USERNAME }}
-          nexusPassword: ${{ secrets.NEXUS_PASSWORD }}
