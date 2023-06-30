@@ -8,6 +8,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://libraries.minecraft.net")
 }
@@ -15,6 +16,7 @@ repositories {
 dependencies {
     compileOnly("com.mojang:brigadier:1.0.18")
     compileOnly("io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot:1.20.1-R0.1-SNAPSHOT")
 }
 
 tasks {

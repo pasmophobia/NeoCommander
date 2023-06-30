@@ -3,9 +3,11 @@ package net.propromp.neocommander.api
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.tree.CommandNode
+import net.minecraft.commands.CommandDispatcher
+import net.minecraft.commands.CommandListenerWrapper
 import net.propromp.neocommander.api.argument.NeoArgument
-import net.propromp.neocommander.api.nms.NMSUtil
 import org.bukkit.command.Command
+import org.bukkit.craftbukkit.v1_20_R1.command.VanillaCommandWrapper
 
 /**
  * SpiCommand
@@ -109,18 +111,16 @@ class NeoCommand(
         minecraftDispatcher: Any,
         commandNode: CommandNode<Any>
     ): Command {
-        val wrapper = NMSUtil.vanillaCommandWrapper().apply {
-            constructBySelectingTypes(
-                arrayOf(minecraftDispatcher::class.java, CommandNode::class.java),
-                arrayOf(minecraftDispatcher, commandNode)
-            )
-            clazz = Command::class.java
+        val wrapper = VanillaCommandWrapper(
+            minecraftDispatcher as CommandDispatcher,
+            commandNode as CommandNode<CommandListenerWrapper>
+        ).apply {
+            label = name
+            description = description
+            aliases = aliases
+            permission = null
         }
-        wrapper.invokeMethod("setLabel", name)
-        wrapper.invokeMethod("setDescription", description)
-        wrapper.invokeMethodBySelectingTypes("setAliases", arrayOf(aliases), arrayOf(List::class.java))
-        wrapper.invokeMethodBySelectingTypes("setPermission", arrayOf(null), arrayOf(String::class.java))
-        return wrapper.instance as Command
+        return wrapper
     }
 
     /**

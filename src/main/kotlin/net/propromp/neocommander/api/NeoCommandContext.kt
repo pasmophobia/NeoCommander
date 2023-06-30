@@ -4,8 +4,9 @@ import com.mojang.brigadier.Message
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
+import net.md_5.bungee.chat.ComponentSerializer
+import net.minecraft.network.chat.IChatBaseComponent
 import net.propromp.neocommander.api.exception.ArgumentParseException
-import net.propromp.neocommander.api.nms.NMSUtil.toIChatBaseComponent
 
 class NeoCommandContext(val command: NeoCommand, val context: CommandContext<Any>) {
     companion object {
@@ -24,7 +25,7 @@ class NeoCommandContext(val command: NeoCommand, val context: CommandContext<Any
             val argument = command.arguments[name]!!
             return argument.parse(this, getArgumentRaw(name, Any::class.java)) as T
         } catch (e: ArgumentParseException) {
-            val message = e.textComponent.toIChatBaseComponent().instance as Message
+            val message = IChatBaseComponent.a(ComponentSerializer.toString(e.textComponent)) as Message
             throw CommandSyntaxException(
                 SimpleCommandExceptionType(message),
                 message,

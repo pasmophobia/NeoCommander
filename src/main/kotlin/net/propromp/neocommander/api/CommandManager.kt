@@ -1,16 +1,17 @@
 package net.propromp.neocommander.api
 
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import com.mojang.brigadier.tree.CommandNode
+import net.minecraft.commands.CommandListenerWrapper
 import net.propromp.neocommander.api.annotation.AnnotationManager
-import net.propromp.neocommander.api.nms.NMS
-import net.propromp.neocommander.api.nms.NMSUtil
-import net.propromp.neocommander.api.nms.NMSUtil.toEntityPlayer
 import net.propromp.neocommander.api.util.removeCommand
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
-import org.bukkit.command.CommandMap
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
-import com.mojang.brigadier.CommandDispatcher as BrigadierDispatcher
 
 /**
  * command manager
@@ -19,9 +20,10 @@ import com.mojang.brigadier.CommandDispatcher as BrigadierDispatcher
  */
 class CommandManager(val plugin: Plugin) {
     val annotationManager = AnnotationManager(this)
-    private val minecraftDispatcher: NMS = NMSUtil.minecraftDispatcher()
-    private val brigadierDispatcher: BrigadierDispatcher<in Any> = minecraftDispatcher.invokeMethod("a") as BrigadierDispatcher<in Any>
+    private val minecraftDispatcher = (Bukkit.getServer() as CraftServer).handle.b().vanillaCommandDispatcher
+    private val brigadierDispatcher = minecraftDispatcher.a() as CommandDispatcher<CommandListenerWrapper>
     private val commands = mutableListOf<NeoCommand>()
+
 
     /**
      * register a command.
@@ -32,15 +34,16 @@ class CommandManager(val plugin: Plugin) {
     fun register(neoCommand: NeoCommand) {
         // register into brigadier
         val literalArgumentBuilder = neoCommand.getLiteralArgumentBuilder()
-        val commandNode = brigadierDispatcher.register(literalArgumentBuilder)
+        val commandNode =
+            brigadierDispatcher.register(literalArgumentBuilder as LiteralArgumentBuilder<CommandListenerWrapper>)
 
         // register aliases into brigadier
-        val aliasArgumentBuilders = neoCommand.getAliasLiteralArgumentBuilders(commandNode)
-        aliasArgumentBuilders.forEach { brigadierDispatcher.register(it) }
+        val aliasArgumentBuilders = neoCommand.getAliasLiteralArgumentBuilders(commandNode as CommandNode<Any>)
+        aliasArgumentBuilders.forEach { brigadierDispatcher.register(it as LiteralArgumentBuilder<CommandListenerWrapper>) }
 
         // register into bukkit
-        val commandMap = NMSUtil.simpleCommandMap().instance as CommandMap
-        commandMap.register(plugin.name, neoCommand.getVanillaCommandWrapper(minecraftDispatcher.instance, commandNode))
+        val commandMap = (Bukkit.getServer() as CraftServer).commandMap
+        commandMap.register(plugin.name, neoCommand.getVanillaCommandWrapper(minecraftDispatcher, commandNode))
 
         // put into map
         commands += neoCommand
@@ -60,8 +63,8 @@ class CommandManager(val plugin: Plugin) {
         commands.remove(neoCommand)
 
         // unregister from bukkit
-        val commandMap = NMSUtil.simpleCommandMap().instance as CommandMap
-        val knownCommands = NMSUtil.simpleCommandMap().getField("knownCommands") as MutableMap<String,Command>
+        val commandMap = (Bukkit.getServer() as CraftServer).commandMap
+        val knownCommands = (Bukkit.getServer() as CraftServer).commandMap.knownCommands as MutableMap<String, Command>
         knownCommands.remove("${plugin.name}:${neoCommand.name}")?.unregister(commandMap)
         knownCommands.remove(neoCommand.name)?.unregister(commandMap)
 
@@ -91,7 +94,7 @@ class CommandManager(val plugin: Plugin) {
      * @param player player
      */
     fun sendCommandUpdate(player: Player) {
-        minecraftDispatcher.invokeMethod("a",player.toEntityPlayer().instance)
+        minecraftDispatcher.a((player as CraftPlayer).handle)
     }
 
     /**
